@@ -17,8 +17,16 @@ function veng_logox4__prepare () {
   local LOGOX_LICKEY="$LIC"
   local VWS_PREWINE_EVAL='export LOGOX_LICKEY'
   local VWS_INIT=()
+  local LGX_VOICE_OPTS=(
+    font_alias
+    vol_db
+    speed_pr
+    pitch_hz
+    inton_pr
+    rough_hz
+    )
   local OPT=
-  for OPT in vol_db speed_pr pitch_hz inton_pr rough_hz; do
+  for OPT in "${LGX_VOICE_OPTS[@]}"; do
     VWS_INIT+=( ".$OPT" "${TTS[$VOICE:$OPT]}" )
   done
   veng_wine_stdin__prepare "$@"; return $?

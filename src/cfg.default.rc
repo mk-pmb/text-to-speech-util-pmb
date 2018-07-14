@@ -3,11 +3,11 @@ TTS[netcat-port]=4224   # xtell
 
 ### Configure a voice engine:
 # TTS[logox4:wpfx]="$HOME/.wine/speechsdk_v11"
-# TTS[logox4:exe]='C:\logox-webspeech4-cli.exe'
+# TTS[logox4:exe]='C:\logox4_cli_simple.exe'
 #
 ### Define a voice:
 # TTS[bill:engine]=logox4
-# TTS[bill:voice_name]=Bill
+# TTS[bill:font_alias]=lgx.de.bill
 # TTS[bill:vol_db]=-6
 # TTS[bill:speed_pr]=120
 # TTS[bill:pitch_hz]=0
