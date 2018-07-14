@@ -7,8 +7,14 @@ function dummytext () {
   case "$TX_LANG" in
     demo )
       TX_LANG="$1"; shift
-      grab_text dummytext "$TX_LANG" && setvoice _guess \
-        && pipe_text nl -ba && pipe_text speak_stdin "$@"
+      vengmgr lang:"$TX_LANG" prepare || return $?
+      ( grab_text dummytext "$TX_LANG" \
+        && pipe_text nl -ba \
+        && pipe_text vengmgr lang:"$TX_LANG" speak_stdin "$@"
+      ) || return $?
+      sleep 1s
+      echo "I: Now reading. Press enter to continue."
+      read -rs TX_LANG
       return $?;;
   esac
   [ -n "$TX_LANG" ] || TX_LANG="$LANGUAGE"

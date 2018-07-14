@@ -21,6 +21,7 @@ function netcat_server__one_turn () {
   MSG="$(netcat -l "$LSN_PORT")"
   echo -n "received ${#MSG} bytes. "
 
+  local LNG=
   local RGX='^SPEAK /([a-z]+) NOT/HTTP\r?\n'
   if [[ "${MSG:0:64}" =~ $RGX ]]; then
     LNG="${BASH_REMATCH[1]}"
