@@ -1,0 +1,22 @@
+{ "name": "text-to-speech-util-pmb",
+  "version": "0.1.0",
+  "description": "Pre-load several speech engines and offer to read text submitted via network.",
+  "keywords": [],
+
+  "author": "M.K. (https://github.com/mk-pmb)",
+  "homepage": "https://github.com/mk-pmb/text-to-speech-util-pmb/#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mk-pmb/text-to-speech-util-pmb.git"
+  },
+  "bugs": {
+    "url": "https://github.com/mk-pmb/text-to-speech-util-pmb/issues"
+  },
+  "contributors": [],
+
+  "private": false, "license": "ISC",
+  "directories": { "test": "test" },
+
+
+  "npm vs. BOM = Unexpected token": "-*- coding: UTF-8 -*-"
+}

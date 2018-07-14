@@ -1,0 +1,35 @@
+TTS[langs]=en,de
+TTS[netcat-port]=4224   # xtell
+
+### Configure a voice engine:
+# TTS[logox4:wpfx]="$HOME/.wine/speechsdk_v11"
+# TTS[logox4:exe]='C:\logox-webspeech4-cli.exe'
+#
+### Define a voice:
+# TTS[bill:engine]=logox4
+# TTS[bill:voice_name]=Bill
+# TTS[bill:vol_db]=-6
+# TTS[bill:speed_pr]=120
+# TTS[bill:pitch_hz]=0
+# TTS[bill:inton_pr]=80
+# TTS[bill:rough_hz]=0
+### Set the voice as default for a language:
+# TTS[lang:de]=bill
+
+# TTS[ms_sapi_v11:wpfx]="$HOME/.wine/speechsdk_v11"
+# TTS[ms_sapi_v11:exe]='C:\mssapi-v11-cli.exe'
+
+# TTS[hedda:engine]=ms_sapi_v11
+# TTS[hedda:voice]='TTS_MS_de-DE_Hedda_11.0'
+# TTS[hedda:speed]=4
+# TTS[lang:de]=hedda
+
+# TTS[zira:engine]=ms_sapi_v11
+# TTS[zira:voice]='TTS_MS_en-US_ZiraPro_11.0'
+# TTS[zira:speed]=4
+# TTS[lang:en]=zira
+
+# TTS[helen:engine]=ms_sapi_v11
+# TTS[helen:voice]='TTS_MS_en-US_Helen_11.0'
+# TTS[helen:speed]=4
+# TTS[lang:en]=helen
