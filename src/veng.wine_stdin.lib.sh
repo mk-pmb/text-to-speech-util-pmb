@@ -24,11 +24,11 @@ function veng_wine_stdin__prepare () {
   veng_wine_stdin__exec wineboot -u &
   # update the wpfx sync to avoid conflicts and repeated effort by multiple
   # vengs using the same wpfx trying to update it in parallel.
-  wait $!
+  wait $! || return $?
 
-  local WINE_CMD=( wine "${TTS[$ENGINE:exe]}" )
+  local WINE_CMD=( exec wine "${TTS[$ENGINE:exe]}" )
   local WINE_STDIN_FD=
-  exec {WINE_STDIN_FD}> >(veng_wine_stdin__exec "$@")
+  exec {WINE_STDIN_FD}> >(veng_wine_stdin__exec "${WINE_CMD[@]}" "$@")
   WINE_PID=$!
   echo "I$LOG_PFX fd $WINE_STDIN_FD = wine pid $WINE_PID"
   TTS["$VOICE":wine_fd]="$WINE_STDIN_FD"
@@ -44,21 +44,50 @@ function veng_wine_stdin__prepare () {
 function veng_wine_stdin__exec () {
   export WINEPREFIX="$WPFX"
   export WINEARCH="$WARCH"
-  [ -n "$WINEDEBUG" ] || export WINEDEBUG=fixme-all
-  exec &> >(sed -re 's~^~D: voice '"'$VOICE'"': ~')
+  local VOICE="$VOICE"
+  local WINEDEBUG="$WINEDEBUG"
+  local DLLOVR="$WINEDLLOVERRIDES"
+  [ -n "$WINEDEBUG" ] || WINEDEBUG=fixme-all
+  local STOPWATCH=
+  local PRE_EVAL="$VWS_PREWINE_EVAL"
 
   case "$1" in
     wineboot )
-      eval "$VWS_PREWINEBOOT_EVAL"
-      "$@"
-      return $?;;
+      VOICE+=" ($1)"
+      STOPWATCH='updating the wine prefix'
+      PRE_EVAL="$VWS_PREWINEBOOT_EVAL"
+      DLLOVR+=";mscoree,mshtml="
+      WINEDEBUG+=",err-winediag"
+      export DISPLAY=
+      grep -qxFe '"ShowCrashDialog"=dword:00000000' -- "$WPFX"/user.reg \
+        || echo "H: voice '$VOICE':" \
+          "consider disabling the GUI crash dialog." \
+          "(util/wine/disable_gui_crash_dialog.reg)" \
+          >&2
+      ;;
   esac
 
-  eval "$VWS_PREWINE_EVAL"
-  cd / || return $?
-  exec "${WINE_CMD[@]}"
-  echo "E: failed to exec ${WINE_CMD[*]}: $?" >&2
-  return 4
+  export WINEDEBUG
+  export WINEDLLOVERRIDES="${DLLOVR#;}"
+  exec &> >(sed -re 's~^~D: voice '"'$VOICE'"': ~')
+  if [ -n "$STOPWATCH" ]; then
+    printf '%(%T)T start %s.\n' -1 "$STOPWATCH"
+    SECONDS=0
+  fi
+  eval "$PRE_EVAL"
+  cd "${VWS_PRE_CHDIR:-/}" || return $?
+  "$@"
+  local RV=$?
+  if [ -n "$STOPWATCH" ]; then
+    printf '%(%T)T done  %s after %s sec, rv=%s.\n' -1 \
+      "$STOPWATCH" "$SECONDS" "$RV"
+  fi
+
+  case "$RV:$1" in
+    0:exec ) RV+=' (?!)';;
+  esac
+  [ "$RV" == 0 ] || echo "E: failed to exec $*: rv=$RV" >&2
+  return "$RV"
 }
 
 
