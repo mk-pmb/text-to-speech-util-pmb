@@ -20,8 +20,13 @@ function veng_wine_stdin__prepare () {
   [ -d "$WPFX" ] || return 3$(
     echo "E$LOG_PFX wine prefix seems to not be a directory: $WPFX" >&2)
   local WARCH="${TTS[$ENGINE:warch]:-win32}"
-  local WINE_CMD=( wine "${TTS[$ENGINE:exe]}" )
 
+  veng_wine_stdin__exec wineboot -u &
+  # update the wpfx sync to avoid conflicts and repeated effort by multiple
+  # vengs using the same wpfx trying to update it in parallel.
+  wait $!
+
+  local WINE_CMD=( wine "${TTS[$ENGINE:exe]}" )
   local WINE_STDIN_FD=
   exec {WINE_STDIN_FD}> >(veng_wine_stdin__exec "$@")
   WINE_PID=$!
@@ -40,8 +45,16 @@ function veng_wine_stdin__exec () {
   export WINEPREFIX="$WPFX"
   export WINEARCH="$WARCH"
   [ -n "$WINEDEBUG" ] || export WINEDEBUG=fixme-all
-  eval "$VWS_PREWINE_EVAL"
   exec &> >(sed -re 's~^~D: voice '"'$VOICE'"': ~')
+
+  case "$1" in
+    wineboot )
+      eval "$VWS_PREWINEBOOT_EVAL"
+      "$@"
+      return $?;;
+  esac
+
+  eval "$VWS_PREWINE_EVAL"
   cd / || return $?
   exec "${WINE_CMD[@]}"
   echo "E: failed to exec ${WINE_CMD[*]}: $?" >&2
