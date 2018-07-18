@@ -30,7 +30,7 @@ function veng_wine_stdin__prepare () {
   local WINE_STDIN_FD=
   exec {WINE_STDIN_FD}> >(veng_wine_stdin__exec "${WINE_CMD[@]}" "$@")
   WINE_PID=$!
-  echo "I$LOG_PFX fd $WINE_STDIN_FD = wine pid $WINE_PID"
+  echo "I$LOG_PFX fd $WINE_STDIN_FD = wine pid $WINE_PID display=$DISPLAY"
   TTS["$VOICE":wine_fd]="$WINE_STDIN_FD"
   TTS["$VOICE":wine_pid]="$WINE_PID"
   TTS["$VOICE":wine_cnt]=0
