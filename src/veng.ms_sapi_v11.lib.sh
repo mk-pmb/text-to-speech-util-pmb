@@ -24,4 +24,12 @@ function veng_ms_sapi_v11__speak_stdin () {
   veng_wine_stdin__base64 "$@"; return $?
 }
 
+function veng_ms_sapi_v11__speak_stop () {
+  <<<'speak stop' veng_wine_stdin__raw "$@"; return $?
+}
+
+function veng_ms_sapi_v11__release () {
+  veng_wine_stdin__"${FUNCNAME#*__}" "$@"; return $?
+}
+
 return 0

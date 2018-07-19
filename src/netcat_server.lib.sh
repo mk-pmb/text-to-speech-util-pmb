@@ -27,10 +27,19 @@ function netcat_server__one_turn () {
     LNG="${BASH_REMATCH[1]}"
     MSG="${MSG#*$'\n'}"
   fi
-  [ -n "$MSG" ] || return 0
-  [ -n "$LNG" ] || LNG="$(<<<"$MSG" guess_text_lang)"
-  echo "gonna read as lang:$LNG."
-  <<<"$MSG" vengmgr lang:"$LNG" speak_stdin || return $?
+
+  case "$MSG" in
+    '' ) ;;
+    *[A-Za-z0-9]* )
+      [ -n "$LNG" ] || LNG="$(<<<"$MSG" guess_text_lang)"
+      echo "gonna read as lang:$LNG."
+      <<<"$MSG" vengmgr lang:"$LNG" speak_stdin || return $?
+      ;;
+    * )
+      echo "gonna stop reading"
+      <<<"$MSG" vengmgr lang:'*' speak_stop || return $?
+      ;;
+  esac
   return 0
 }
 

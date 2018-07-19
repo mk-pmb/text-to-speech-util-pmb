@@ -4,6 +4,7 @@
 
 function dummytext () {
   local TX_LANG="$1"; shift
+  local TX=
   case "$TX_LANG" in
     demo )
       TX_LANG="$1"; shift
@@ -14,12 +15,13 @@ function dummytext () {
       ) || return $?
       sleep 1s
       echo "I: Now reading. Press enter to continue."
-      read -rs TX_LANG
-      return $?;;
+      read -rs TX
+      pipe_text vengmgr lang:"$TX_LANG" release --wait || return $?
+      return 0;;
   esac
   [ -n "$TX_LANG" ] || TX_LANG="$LANGUAGE"
 
-  local TX="$(LANGUAGE="$TX_LANG" man --help | LANG=C sed -re '
+  TX="$(LANGUAGE="$TX_LANG" man --help | LANG=C sed -re '
     :read_all
     $!{N;b read_all}
     s~\n {8,}~ ~g

@@ -24,6 +24,12 @@ function vengmgr () {
   esac
   local ENG="${TTS[$VOICE:engine]}"
   local ACTION="$1"; shift
+  case "$ACTION" in
+    up-down-test )
+      veng_"$ENG"__prepare "$VOICE" || return $?
+      veng_"$ENG"__release "$VOICE" --wait || return $?
+      return 0;;
+  esac
   veng_"$ENG"__"$ACTION" "$VOICE" "$@"; return $?
 }
 
