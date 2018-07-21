@@ -1,0 +1,20 @@
+{ "name": "text-to-speech-util-pmb-blob-snapshots",
+  "version": "0.1.8",
+  "description": "",
+  "keywords": [],
+
+  "author": "M.K. (https://github.com/mk-pmb)",
+  "homepage": "https://github.com/mk-pmb/text-to-speech-util-pmb/#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mk-pmb/text-to-speech-util-pmb.git"
+  },
+  "bugs": {
+    "url": "https://github.com/mk-pmb/text-to-speech-util-pmb/issues"
+  },
+  "contributors": [],
+
+  "private": false, "license": "ISC",
+
+  "npm vs. BOM = Unexpected token": "-*- coding: UTF-8 -*-"
+}
