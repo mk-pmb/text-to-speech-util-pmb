@@ -100,10 +100,14 @@ function veng_wine_stdin__raw () {
   local MSG_CNT="${TTS[$VOICE:wine_cnt]}"
   let MSG_CNT="$MSG_CNT+1"
   TTS["$VOICE":wine_cnt]="$MSG_CNT"
-  ( [ -n "${VWS_HEAD[*]}" ] && printf '%s\n' "${VWS_HEAD[@]}"
+  local PIPE_FD="${TTS[$VOICE:wine_fd]}"
+  ( [ -z "${VWS_HEAD[*]}" ] || printf '%s\n' "${VWS_HEAD[@]}"
     echo "$INPUT"
-    [ -n "${VWS_TAIL[*]}" ] && printf '%s\n' "${VWS_TAIL[@]}"
-  ) >&"${TTS[$VOICE:wine_fd]}"
+    [ -z "${VWS_TAIL[*]}" ] || printf '%s\n' "${VWS_TAIL[@]}"
+    true
+  ) >&"$PIPE_FD" || return $?$(
+    echo "E: $FUNCNAME: failed to write to FD $PIPE_FD" >&2)
+  return 0
 }
 
 

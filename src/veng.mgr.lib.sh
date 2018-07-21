@@ -5,10 +5,14 @@ function vengmgr () {
   local VOICE="$1"; shift
   case "$VOICE" in
     'lang:*' )
+      local RV=0
       for VOICE in $(cfg_each_lang); do
-        "$FUNCNAME" lang:"$VOICE" "$@" || return $?
+        VOICE="${TTS[lang:$VOICE]}"
+        "$FUNCNAME" "$VOICE" "$@" && continue
+        echo "E: $FUNCNAME: voice '$VOICE': failed to $1, rv=$?" >&2
+        let RV="$RV+1"
       done
-      return 0;;
+      return "$RV";;
     lang:* )
       [ -n "${TTS[$VOICE]}" ] || return 3$(
         echo "E: no voice configured for '$VOICE'" >&2)
