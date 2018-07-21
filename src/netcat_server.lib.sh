@@ -33,11 +33,13 @@ function netcat_server__one_turn () {
     *[A-Za-z0-9]* )
       [ -n "$LNG" ] || LNG="$(<<<"$MSG" guess_text_lang)"
       echo "gonna read as lang:$LNG."
-      <<<"$MSG" vengmgr lang:"$LNG" speak_stdin || return $?
+      <<<"$MSG" vengmgr lang:"$LNG" speak_stdin || return $?$(
+        echo "E: failed to speak, rv=$?" >&2)
       ;;
     * )
       echo "gonna stop reading"
-      <<<"$MSG" vengmgr lang:'*' speak_stop || return $?
+      <<<"$MSG" vengmgr lang:'*' speak_stop || return $?$(
+        echo "E: failed to shut up, rv=$?" >&2)
       ;;
   esac
   return 0
