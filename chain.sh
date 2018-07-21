@@ -4,6 +4,7 @@
 
 function tts_chain () {
   export LANG{,UAGE}=en_US.UTF-8  # make error messages search engine-friendly
+  local INVOKED_AS="$(basename "$0" .sh)"
   local SELFPATH="$(readlink -m "$BASH_SOURCE"/..)"
   # cd "$SELFPATH" || return $?
   local APP_NAME="$(basename "$SELFPATH")"
@@ -24,13 +25,20 @@ function tts_chain () {
   done
 
   local CMD=()
-  for ITEM in "$@" :; do
+  local INVO="$INVOKED_AS"
+  INVO="${INVO#tts-}"
+  INVO="${INVO%-pmb}"
+  case "$INVO" in
+    ncsrv ) CMD=( netcat_server : );;
+  esac
+  for ITEM in "${CMD[@]}" "$@" :; do
     case "$ITEM" in
       : )
-        [ -n "${CMD[*]}" ] || return 0
-        ITEM="$SELFPATH/src/${CMD[0]}.sh"
-        [ -x "$ITEM" ] && CMD[0]="$ITEM"
-        "${CMD[@]}" || return $?
+        if [ -n "${CMD[*]}" ]; then
+          ITEM="$SELFPATH/src/${CMD[0]}.sh"
+          [ -x "$ITEM" ] && CMD[0]="$ITEM"
+          "${CMD[@]}" || return $?
+        fi
         CMD=();;
       * ) CMD+=( "$ITEM" );;
     esac

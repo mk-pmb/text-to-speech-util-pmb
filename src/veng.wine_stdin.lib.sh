@@ -64,6 +64,8 @@ function veng_wine_stdin__exec () {
   case "$1" in
     --wineboot-update )
       VOICE+=" (wineboot)"
+      wineboot_update_disabled && return 0$(
+        echo "D: voice '$VOICE': skip: .update-timestamp set to 'disable'" >&2)
       WINECMD=(
         "$WPFX"/wineboot-update-fixed{,.sh,.pl,.py}
         wineboot-update-fixed
@@ -81,7 +83,7 @@ function veng_wine_stdin__exec () {
 
   export WINEDEBUG
   export WINEDLLOVERRIDES="${DLLOVR#;}"
-  exec &> >(sed -ure 's~^~D: voice '"'$VOICE'"': ~')
+  exec &> >(sed -ure "s~^~D: voice '$VOICE': ~")
   eval "$PRE_EVAL"
   cd "${VWS_PRE_CHDIR:-/}" || return $?
   exec "${WINECMD[@]}"
