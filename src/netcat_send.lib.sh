@@ -12,6 +12,7 @@ function netcat_send () {
       ;;
   esac
   local DEST_PORT="${1:-${TTS[netcat-port]}}"; shift
+  [ -n "$HOSTNAME" ] || local HOSTNAME="$(hostname --short)"
 
   case "$DEST_HOST" in
     '~/'* ) DEST_HOST="$HOME${DEST_HOST:1}";;
@@ -22,6 +23,13 @@ function netcat_send () {
   case "$DEST_HOST" in
     *.* | *:* ) ;;
     *[a-z]* ) DEST_HOST+="$DEST_DOMAIN";;
+  esac
+  case "$DEST_HOST" in
+    "$HOSTNAME".local | \
+    "$HOSTNAME" )
+      # Don't involve avahi unless we have to.
+      # Also fixes issues with number-suffixed avahi hostnames.
+      DEST_HOST='127.0.0.1';;
   esac
   [ -n "$DEST_HOST" ] || return 5$(echo "E: no destination host given" >&2)
 
