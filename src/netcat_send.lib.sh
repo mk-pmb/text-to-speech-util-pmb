@@ -2,7 +2,28 @@
 # -*- coding: utf-8, tab-width: 2 -*-
 
 
-function netcat_send () {
+function netcat_send__raw () {
+  local DEST=
+  DEST="$("${FUNCNAME%__*}"__find_dest "$@")" || return $?
+  local NC_CMD=(
+    netcat
+    -w "${TTS[netcat-timeout]:-5}"
+    -q "${TTS[netcat-grace]:-1}"
+    "${DEST% *}" "${DEST##* }"
+    )
+  [ "${DEBUGLEVEL:-0}" -ge 2 ] && echo "D: netcat cmd: ${NC_CMD[*]}" >&2
+  "${NC_CMD[@]}"
+  return $?
+}
+
+
+function netcat_send__with_lang () {
+  <<<"SPEAK /${TTS[lang]:-unknown} NOT/HTTP"$'\r\n\r\n'"${TTS[text]}" \
+    "${FUNCNAME%__*}"__raw "$@"; return $?
+}
+
+
+function netcat_send__find_dest () {
   local DEST_HOST="${1:-localhost}"; shift
   local DEST_DOMAIN="${TTS[netcat-domain]}"
   case "$DEST_HOST" in
@@ -33,14 +54,7 @@ function netcat_send () {
   esac
   [ -n "$DEST_HOST" ] || return 5$(echo "E: no destination host given" >&2)
 
-  local NC_CMD=(
-    netcat
-    -w "${TTS[netcat-timeout]:-5}"
-    -q "${TTS[netcat-grace]:-1}"
-    "$DEST_HOST" "$DEST_PORT"
-    )
-  [ "${DEBUGLEVEL:-0}" -ge 2 ] && echo "D: netcat cmd: ${NC_CMD[*]}" >&2
-  "${NC_CMD[@]}"
+  echo "$DEST_HOST $DEST_PORT"
   return $?
 }
 

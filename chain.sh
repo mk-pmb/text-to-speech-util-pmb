@@ -48,8 +48,21 @@ function tts_chain () {
 
 
 function grab_text () {
-  local TX="$("$@")"
-  [ -n "$TX" ] || return 2$(echo "E: $FUNCNAME: no output from $*" >&2)
+  if [ "$1" == --refine ]; then exec <<<"${TTS[text]}"; shift; fi
+  local ERRLV=E
+  if [ "$1" == --maybe ]; then ERRLV=W; shift; fi
+  local TX=     # <-- pre-declare because "local" determines $?, whereas…
+  TX="$("$@")"  # <-- a simple assignment transports $?.
+  local RV="$?"
+  if [ "$RV" != 0 ]; then
+    echo "$ERRLV: rv=$RV from $*" >&2
+    [ "$ERRLV" == W ] && return 0
+    return "$RV"
+  elif [ -z "$TX" ]; then
+    echo "$ERRLV: no output from $*" >&2
+    [ "$ERRLV" == W ] && return 0
+    return 2
+  fi
   TTS[text]="$TX"
 }
 

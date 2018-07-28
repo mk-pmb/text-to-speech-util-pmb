@@ -22,8 +22,11 @@ function netcat_server__one_turn () {
   echo -n "received ${#MSG} bytes. "
 
   local LNG=
-  local RGX='^SPEAK /([a-z]+) NOT/HTTP\r?\n'
-  if [[ "${MSG:0:64}" =~ $RGX ]]; then
+  local HEAD="${MSG:0:64}"
+  HEAD="${HEAD%%$'\n'*}"
+  HEAD="${HEAD%$'\r'}"
+  local RGX='^SPEAK /([a-z]+) NOT/HTTP$'
+  if [[ "$HEAD" =~ $RGX ]]; then
     LNG="${BASH_REMATCH[1]}"
     MSG="${MSG#*$'\n'}"
   fi
