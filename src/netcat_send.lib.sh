@@ -18,8 +18,16 @@ function netcat_send__raw () {
 
 
 function netcat_send__with_lang () {
-  <<<"SPEAK /${TTS[lang]:-unknown} NOT/HTTP"$'\r\n\r\n'"${TTS[text]}" \
-    "${FUNCNAME%__*}"__raw "$@"; return $?
+  local INPUT="${TTS[text]}"
+  local HEAD="$(<<<"$INPUT" netcat_server__check_msg_head)"
+  if [ -n "$HEAD" ]; then
+    <<<"$INPUT" "${FUNCNAME%__*}"__raw "$@"
+    return $?
+  fi
+  local LNG="${TTS[lang]:-unknown}"
+  exec <<<"SPEAK /$LNG NOT/HTTP"$'\r\n\r\n'"$INPUT"
+  "${FUNCNAME%__*}"__raw "$@"
+  return $?
 }
 
 

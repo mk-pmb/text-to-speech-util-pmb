@@ -14,6 +14,25 @@ function netcat_server () {
 }
 
 
+function netcat_server__check_msg_head () {
+  local HEAD="$(head --bytes=128)"
+  HEAD="${HEAD%%$'\n'*}"
+  HEAD="${HEAD%$'\r'}"
+  <<<"$HEAD" grep -xPe 'SPEAK .* NOT/HTTP'
+  return $?
+}
+
+
+function netcat_server__stash_msg_head () {
+  local HEAD="$(<<<"${TTS[text]}" "${FUNCNAME%__*}"__check_msg_head)"
+  [ -n "$HEAD" ] && TTS[text]="${TTS[text]#*$'\n'}"
+  "$@"
+  local RV=$?
+  [ -n "$HEAD" ] && TTS[text]="$HEAD"$'\n'"${TTS[text]}"
+  return "$RV"
+}
+
+
 function netcat_server__one_turn () {
   vengmgr 'lang:*' prepare || return $?
   echo -n "listening on port $LSN_PORT: "
@@ -21,14 +40,16 @@ function netcat_server__one_turn () {
   MSG="$(netcat -l "$LSN_PORT")"
   echo -n "received ${#MSG} bytes. "
 
-  local LNG=
-  local HEAD="${MSG:0:64}"
-  HEAD="${HEAD%%$'\n'*}"
-  HEAD="${HEAD%$'\r'}"
-  local RGX='^SPEAK /([a-z]+) NOT/HTTP$'
-  if [[ "$HEAD" =~ $RGX ]]; then
-    LNG="${BASH_REMATCH[1]}"
+  local HEAD="$(<<<"$MSG" "${FUNCNAME%__*}"__check_msg_head)"
+  local LNG= URL= QRY= RGX=
+  if [ -n "$HEAD" ]; then
     MSG="${MSG#*$'\n'}"
+    URL="${HEAD#* }"
+    URL="${URL% *}"
+    QRY="${URL#*\?}"
+    [ "$QRY" == "$URL" ] && QRY=
+    URL="${URL%%\?*}"
+    [[ "$URL" =~ ^/([a-z]+)$ ]] && LNG="${BASH_REMATCH[1]}"
   fi
 
   if [ -z "$MSG" ]; then
@@ -36,7 +57,7 @@ function netcat_server__one_turn () {
     return 0
   fi
 
-  echo "gonna stop reading"
+  echo 'gonna stop reading.'
   <<<"$MSG" vengmgr lang:'*' speak_stop || return $?$(
     echo "E: failed to shut up, rv=$?" >&2)
 
