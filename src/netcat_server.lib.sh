@@ -49,7 +49,16 @@ function netcat_server__one_turn () {
     QRY="${URL#*\?}"
     [ "$QRY" == "$URL" ] && QRY=
     URL="${URL%%\?*}"
-    [[ "$URL" =~ ^/([a-z]+)$ ]] && LNG="${BASH_REMATCH[1]}"
+    if [[ "$URL" =~ ^/([a-z]+)$ ]]; then
+      LNG="${BASH_REMATCH[1]}"
+      case ",${TTS[langs]}," in
+        *",$LNG,"* ) ;;
+        * )
+          echo "W: language '$LNG' requested but not configured." \
+            "Will try to guess instead." >&2
+          LNG=;;
+      esac
+    fi
   fi
 
   if [ -z "$MSG" ]; then
