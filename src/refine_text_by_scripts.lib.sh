@@ -30,7 +30,10 @@ function refine_text_by_scripts__langdirs () {
   local FIND_OPT=()
   local ITEM=
   for ITEM in "$@"; do
-    FIND_OPT+=( "${ITEM%/}/${TTS[lang]}/" )
+    FIND_OPT+=(
+      "${ITEM%/}/${TTS[lang]}/"
+      "${ITEM%/}/common/"
+      )
   done
   FIND_OPT+=(
     -maxdepth 1
