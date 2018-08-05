@@ -6,7 +6,7 @@ function netcat_server () {
   local LSN_PORT="${TTS[netcat-port]:-0}"
   vengmgr 'lang:*' prepare || return $?
   while true; do
-    echo -n 'grace delay: '
+    printf '%(%T)T %s' -1 'D: grace delay: '
     sleep 2
     netcat_server__one_turn || return $?
   done
@@ -35,10 +35,10 @@ function netcat_server__stash_msg_head () {
 
 function netcat_server__one_turn () {
   vengmgr 'lang:*' prepare || return $?
-  echo -n "listening on port $LSN_PORT: "
+  printf '%(%T)T %s' -1 "listening on port $LSN_PORT: "
   local MSG=
   MSG="$(netcat -l "$LSN_PORT")"
-  echo -n "received ${#MSG} bytes. "
+  printf '%(%T)T %s' -1 "received ${#MSG} bytes. "
 
   local HEAD="$(<<<"$MSG" "${FUNCNAME%__*}"__check_msg_head)"
   local LNG= URL= QRY= RGX=
@@ -54,30 +54,30 @@ function netcat_server__one_turn () {
       case ",${TTS[langs]}," in
         *",$LNG,"* ) ;;
         * )
-          echo "W: language '$LNG' requested but not configured." \
-            "Will try to guess instead." >&2
+          printf '%(%T)T W: language "%s" requested but not configured.'$(
+            )' Will try to guess instead.\n' -1 "$LNG" >&2
           LNG=;;
       esac
     fi
   fi
 
   if [ -z "$MSG" ]; then
-    echo "D: empty message. ignored."
+    printf '%(%T)T D: empty message. ignored.\n' -1
     return 0
   fi
 
-  echo 'gonna stop reading.'
+  $LOG 'gonna stop reading.'
   <<<"$MSG" vengmgr lang:'*' speak_stop || return $?$(
-    echo "E: failed to shut up, rv=$?" >&2)
+    printf '%(%T)T E: failed to shut up, rv=%s\n' -1 "$?" >&2)
 
   case "$MSG" in
     *[A-Za-z0-9]* )
       [ -n "$LNG" ] || LNG="$(<<<"$MSG" guess_text_lang)"
-      echo "gonna read as lang:$LNG."
+      printf '%(%T)T D: gonna read as lang:%s.\n' -1 "$LNG"
       <<<"$MSG" vengmgr lang:"$LNG" speak_stdin || return $?$(
-        echo "E: failed to speak, rv=$?" >&2)
+        printf "%(%T)T E: failed to speak, rv=$?\n" -1 >&2)
       ;;
-    * ) echo "D: message with no letters or digits. ignored.";;
+    * ) printf '%(%T)T D: message with no letters or digits. ignored.\n' -1;;
   esac
   sleep 2s
   return 0
