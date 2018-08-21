@@ -66,7 +66,7 @@ function netcat_server__one_turn () {
     return 0
   fi
 
-  $LOG 'gonna stop reading.'
+  printf '%(%T)T D: gonna stop reading.\n'
   <<<"$MSG" vengmgr lang:'*' speak_stop || return $?$(
     printf '%(%T)T E: failed to shut up, rv=%s\n' -1 "$?" >&2)
 
