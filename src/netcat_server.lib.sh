@@ -5,6 +5,8 @@
 function netcat_server () {
   local LSN_PORT="${TTS[netcat-port]:-0}"
   vengmgr 'lang:*' prepare || return $?
+  TTS[ncsrv-pid]=$$
+  TTS[ncsrv-msgnum]=0
   while true; do
     printf '%(%T)T %s' -1 'D: grace delay: '
     sleep 2
@@ -35,10 +37,25 @@ function netcat_server__stash_msg_head () {
 
 function netcat_server__one_turn () {
   vengmgr 'lang:*' prepare || return $?
-  printf '%(%T)T %s' -1 "listening on port $LSN_PORT: "
+  local NCSRV_PID="${TTS[ncsrv-pid]}"
+  let TTS[ncsrv-msgnum]="${TTS[ncsrv-msgnum]}+1"
+
+  printf '%(%T)T ' -1
+  echo -n "tts-ncsrv pid $NCSRV_PID "
+  echo -n "listening on port $LSN_PORT for msg #${TTS[ncsrv-msgnum]}: "
   local MSG=
   MSG="$(netcat -l "$LSN_PORT")"
   printf '%(%T)T %s' -1 "received ${#MSG} bytes. "
+
+  local DEBUGDUMP_BFN="$HOME/.cache/var/debug/tts-ncsrv"
+  [ -d "$DEBUGDUMP_BFN" ] && DEBUGDUMP_BFN+="/$(date +%y%m%d)-$NCSRV_PID"
+  if [ -d "$DEBUGDUMP_BFN" ]; then
+    DEBUGDUMP_BFN+="/$(date +%H%M%S)-${TTS[ncsrv-msgnum]}"
+    echo "D: debug dump bfn: $DEBUGDUMP_BFN" >&2
+  else
+    DEBUGDUMP_BFN=
+  fi
+  [ -z "$DEBUGDUMP_BFN" ] || echo "$MSG" >"$DEBUGDUMP_BFN".rcv
 
   local HEAD="$(<<<"$MSG" "${FUNCNAME%__*}"__check_msg_head)"
   local LNG= URL= QRY= RGX=
