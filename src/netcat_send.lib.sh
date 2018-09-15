@@ -12,6 +12,7 @@ function netcat_send__raw () {
     "${DEST% *}" "${DEST##* }"
     )
   [ "${DEBUGLEVEL:-0}" -ge 2 ] && echo "D: netcat cmd: ${NC_CMD[*]}" >&2
+  # exec < <(tee -- "$HOME/$FUNCNAME.$(date +%H%M%S).$$.txt")
   "${NC_CMD[@]}"
   return $?
 }
