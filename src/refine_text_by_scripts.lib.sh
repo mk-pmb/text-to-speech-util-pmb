@@ -36,6 +36,7 @@ function refine_text_by_scripts__langdirs () {
       )
   done
   FIND_OPT+=(
+    -L    # follow symlinks
     -maxdepth 1
     -type f
     '(' -false
