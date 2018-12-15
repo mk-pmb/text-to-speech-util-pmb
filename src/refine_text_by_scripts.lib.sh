@@ -27,26 +27,27 @@ function refine_text_by_scripts () {
 
 function refine_text_by_scripts__langdirs () {
   [ -n "${TTS[lang]}" ] || pipe_text guess_text_lang =
-  local FIND_OPT=()
-  local ITEM=
-  for ITEM in "$@"; do
-    FIND_OPT+=(
-      "${ITEM%/}/${TTS[lang]}/"
-      "${ITEM%/}/common/"
-      )
+  local FIND_ARGS=() ADD=() SCRIPTS=()
+  local ARG=
+  for ARG in "$@"; do
+    FIND_ARGS=(
+      -L    # follow symlinks
+
+      "${ARG%/}/${TTS[lang]}/"
+      "${ARG%/}/common/"
+
+      -maxdepth 1
+      -type f
+      '(' -false
+        -o -name '*.js'
+        -o -name '*.sed'
+      ')'
+      -printf '%f\t%p\n'
+    )
+    readarray -t ADD < <(find "${FIND_ARGS[@]}" | LANG=C sort -V | cut -sf 2- \
+      | tee /dev/stderr)
+    SCRIPTS+=( "${ADD[@]}" )
   done
-  FIND_OPT+=(
-    -L    # follow symlinks
-    -maxdepth 1
-    -type f
-    '(' -false
-      -o -name '*.js'
-      -o -name '*.sed'
-    ')'
-    -printf '%f\t%p\n'
-  )
-  local SCRIPTS=()
-  readarray -t SCRIPTS < <(find "${FIND_OPT[@]}" | LANG=C sort -V | cut -sf 2-)
   "${FUNCNAME%__*}" "${SCRIPTS[@]}"
   return $?
 }
