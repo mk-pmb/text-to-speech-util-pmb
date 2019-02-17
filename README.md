@@ -17,7 +17,7 @@ Voice engine TTS CLI apps
 You can find some exe snapshots in the `blobs` branch. Use at your own risk.
 If you prefer to compile them yourself, you can find the sources here:
 
-* MS SAPI v1: `tts-cli/serverTtsCli.cs` from
+* MS SAPI v11: `tts-cli/serverTtsCli.cs` from
   https://github.com/mk-pmb/msspeechsdk_v011_wine_howto/
 * Logox 4: `tts-cli/logox4_cli_simple.cs` from
   https://github.com/mk-pmb/webspeech-util-pmb/
