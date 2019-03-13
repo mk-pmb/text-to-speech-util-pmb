@@ -44,8 +44,7 @@ function refine_text_by_scripts__langdirs () {
       ')'
       -printf '%f\t%p\n'
     )
-    readarray -t ADD < <(find "${FIND_ARGS[@]}" | LANG=C sort -V | cut -sf 2- \
-      | tee /dev/stderr)
+    readarray -t ADD < <(find "${FIND_ARGS[@]}" | LANG=C sort -V | cut -sf 2-)
     SCRIPTS+=( "${ADD[@]}" )
   done
   "${FUNCNAME%__*}" "${SCRIPTS[@]}"
