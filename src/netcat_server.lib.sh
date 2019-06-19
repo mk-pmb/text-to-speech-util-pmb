@@ -42,9 +42,17 @@ function netcat_server__one_turn () {
 
   printf '%(%T)T ' -1
   echo -n "tts-ncsrv pid $NCSRV_PID "
-  echo -n "listening on port $LSN_PORT for msg #${TTS[ncsrv-msgnum]}: "
-  local MSG=
-  MSG="$(netcat -l "$LSN_PORT")"
+  echo -n "listening on port $LSN_PORT for msg #${TTS[ncsrv-msgnum]}, "
+  local MSG= LSN_FD= NCLSN_PID=
+  exec {LSN_FD}< <(exec netcat -l "$LSN_PORT"); NCLSN_PID=$!
+  echo -n "nc pid $NCLSN_PID: "
+
+  local LSN_TMO="${TTS[ncsrv-listen-timeout]// /}"
+  local TMO_CMD=()
+  [ -n "$LSN_TMO" ] && TMO_CMD=( timeout "$LSN_TMO" )
+  local MSG="$("${TMO_CMD[@]}" cat <&"$LSN_FD")"
+  kill -HUP "$NCLSN_PID" 2>/dev/null
+  exec {LSN_FD}<&-
   printf '%(%T)T %s' -1 "received ${#MSG} bytes. "
 
   local DEBUGDUMP_BFN="$HOME/.cache/var/debug/tts-ncsrv"
