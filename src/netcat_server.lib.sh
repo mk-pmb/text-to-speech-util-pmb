@@ -4,9 +4,11 @@
 
 function netcat_server () {
   local LSN_PORT="${TTS[netcat-port]:-0}"
-  vengmgr 'lang:*' prepare || return $?
   TTS[ncsrv-pid]=$$
   TTS[ncsrv-msgnum]=0
+
+  worker_util__self_limit netcat- || return $?
+  vengmgr 'lang:*' prepare || return $?
   while true; do
     printf '%(%T)T %s' -1 'D: grace delay: '
     sleep 2
