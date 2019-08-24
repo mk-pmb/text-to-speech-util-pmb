@@ -1,5 +1,5 @@
 { "name": "text-to-speech-util-pmb",
-  "version": "0.1.15",
+  "version": "0.1.16",
   "description": "Pre-load several speech engines and offer to read text submitted via network.",
   "keywords": [],
 

@@ -6,15 +6,18 @@ function netcat_server () {
   local LSN_PORT="${TTS[netcat-port]:-0}"
   TTS[ncsrv-pid]=$$
   TTS[ncsrv-msgnum]=0
+  exec </dev/null
+  cd / || return $?
+
+  local LOG_PID=$$
+  local LOG_FN="${TTS[ncsrv-logfile]}"
+  worker_util__maybe_redir_all_output_to_logfile "$LOG_FN" || return $?
 
   worker_util__self_limit netcat- || return $?
   vengmgr 'lang:*' prepare || return $?
   while true; do
-    printf '%(%T)T %s' -1 'D: grace delay: '
-    sleep 2
     netcat_server__one_turn || return $?
   done
-  return 0
 }
 
 
@@ -38,6 +41,11 @@ function netcat_server__stash_msg_head () {
 
 
 function netcat_server__one_turn () {
+  worker_util__maybe_redir_all_output_to_logfile "$LOG_FN" || return $?
+
+  printf '%(%T)T %s' -1 'D: grace delay: '
+  sleep "${TTS[ncsrv-turn-delay]:-1s}" || return $?
+
   vengmgr 'lang:*' prepare || return $?
   local NCSRV_PID="${TTS[ncsrv-pid]}"
   let TTS[ncsrv-msgnum]="${TTS[ncsrv-msgnum]}+1"
@@ -109,6 +117,10 @@ function netcat_server__one_turn () {
   sleep 2s
   return 0
 }
+
+
+
+
 
 
 return 0
