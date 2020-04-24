@@ -54,7 +54,7 @@ function netcat_server__one_turn () {
   echo -n "tts-ncsrv pid $NCSRV_PID "
   echo -n "listening on port $LSN_PORT for msg #${TTS[ncsrv-msgnum]}, "
   local MSG= LSN_FD= NCLSN_PID=
-  exec {LSN_FD}< <(exec netcat -l "$LSN_PORT"); NCLSN_PID=$!
+  exec {LSN_FD}< <(exec netcat -dl "$LSN_PORT"); NCLSN_PID=$!
   echo -n "nc pid $NCLSN_PID: "
 
   local LSN_TMO="${TTS[ncsrv-listen-timeout]// /}"
