@@ -9,7 +9,8 @@ function netcat_server () {
   exec </dev/null
   cd / || return $?
 
-  local LOG_PID=$$
+  worker_util__ensure_pgroup_leader || return $?
+  local LOG_PID=$$ LOG_PGID=$$
   local LOG_FN="${TTS[ncsrv-logfile]}"
   worker_util__maybe_redir_all_output_to_logfile "$LOG_FN" || return $?
 
