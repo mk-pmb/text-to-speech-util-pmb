@@ -4,18 +4,18 @@
 
 function tts_chain () {
   export LANG{,UAGE}=en_US.UTF-8  # make error messages search engine-friendly
-  local INVOKED_AS="$(basename "$0" .sh)"
-  local SELFPATH="$(readlink -m "$BASH_SOURCE"/..)"
-  # cd "$SELFPATH" || return $?
-  local APP_NAME="$(basename "$SELFPATH")"
+  local INVOKED_AS="$(basename -- "$0" .sh)"
+  local TTSU_PATH="$(readlink -m -- "$BASH_SOURCE"/..)"
+  # cd "$TTSU_PATH" || return $?
+  local APP_NAME="$(basename -- "$TTSU_PATH")"
 
   local -A TTS=()
   local ITEM=
-  for ITEM in "$SELFPATH"/src/*.lib.sh; do
+  for ITEM in "$TTSU_PATH"/src/*.lib.sh; do
     source "$ITEM" --lib || return $?
   done
   local CFG_PATHS=(
-    "$SELFPATH"/src/cfg.default.rc
+    "$TTSU_PATH"/src/cfg.default.rc
     "$HOME/.config/speech-util-pmb/tts-util.rc"
     "$HOME/.config/$APP_NAME"/*.rc
     )
@@ -35,7 +35,7 @@ function tts_chain () {
     case "$ITEM" in
       : )
         if [ -n "${CMD[*]}" ]; then
-          ITEM="$SELFPATH/src/${CMD[0]}.sh"
+          ITEM="$TTSU_PATH/src/${CMD[0]}.sh"
           [ -x "$ITEM" ] && CMD[0]="$ITEM"
           "${CMD[@]}" || return $?
         fi
