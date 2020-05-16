@@ -24,9 +24,8 @@ function netcat_server () {
   local MUTEX_TOUCHER=
   local MUTEX_CMD=( true )
   if [ -n "$MUTEX_FILE" ]; then
-    MUTEX_FILE="$(worker_util__render_filename_template "$MUTEX_FILE")"
-    [ -n "$MUTEX_FILE" ] || return 3$(
-      echo "E: failed to determine mutex filename from pattern" >&2)
+    MUTEX_FILE="$(worker_util__render_filename_template "$MUTEX_FILE"
+      )" || return $?
     MUTEX_CMD=( worker_util__lockfile_action "$MUTEX_FILE" )
     "${MUTEX_CMD[@]}" create || return $?$(
       echo "E: failed to create pidfile $MUTEX_FILE" >&2)
@@ -77,7 +76,6 @@ function netcat_server__one_turn () {
   local NCSRV_PID="${TTS[ncsrv-pid]}"
   let TTS[ncsrv-msgnum]="${TTS[ncsrv-msgnum]}+1"
 
-  printf '%(%T)T ' -1
   echo -n "tts-ncsrv pid $NCSRV_PID "
   echo -n "listening on port $LSN_PORT for msg #${TTS[ncsrv-msgnum]}, "
   local MSG= LSN_FD= NCLSN_PID=
@@ -85,7 +83,7 @@ function netcat_server__one_turn () {
     LANG=C PORT="$LSN_PORT" sh -c 'echo $$; exec 2>&1; exec netcat -dl "$PORT"'
     echo -e "\arv=$?")
   read -ru "$LSN_FD" NCLSN_PID
-  echo -n "netcat pid $NCLSN_PID: "
+  echo "netcat pid $NCLSN_PID:"
 
   local LSN_TMO="${TTS[ncsrv-listen-timeout]// /}"
   local TMO_CMD=()
@@ -94,8 +92,7 @@ function netcat_server__one_turn () {
   local READ_RV=$?
   kill -HUP "$NCLSN_PID" 2>/dev/null
   exec {LSN_FD}<&-
-  worker_util__maybe_redir_all_output_to_logfile "$LOG_FN" || return $?
-  printf '%(%T)T %s' -1 "read rv=$READ_RV, received ${#MSG} bytes. "
+  echo "read rv=$READ_RV, received ${#MSG} bytes. "
   if [ "$READ_RV" != 0 ]; then
     echo "skipping due to read failure."
     return 0
@@ -152,30 +149,30 @@ function netcat_server__one_turn () {
       case ",${TTS[langs]}," in
         *",$LNG,"* ) ;;
         * )
-          printf '%(%T)T W: language "%s" requested but not configured.'$(
-            )' Will try to guess instead.\n' -1 "$LNG" >&2
+          echo "W: language '$LNG' requested but not configured." \
+            "Will try to guess instead." >&2
           LNG=;;
       esac
     fi
   fi
 
   if [ -z "$MSG" ]; then
-    printf '%(%T)T D: empty message. ignored.\n' -1
+    echo "D: empty message. ignored."
     return 0
   fi
 
-  printf '%(%T)T D: gonna stop reading.\n'
+  echo "D: gonna stop reading."
   <<<"$MSG" vengmgr lang:'*' speak_stop || return $?$(
-    printf '%(%T)T E: failed to shut up, rv=%s\n' -1 "$?" >&2)
+    echo "E: failed to shut up, rv=$?" >&2)
 
   case "$MSG" in
     *[A-Za-z0-9]* )
       [ -n "$LNG" ] || LNG="$(<<<"$MSG" guess_text_lang)"
-      printf '%(%T)T D: gonna read as lang:%s.\n' -1 "$LNG"
+      echo "D: gonna read as lang:$LNG."
       <<<"$MSG" vengmgr lang:"$LNG" speak_stdin || return $?$(
-        printf "%(%T)T E: failed to speak, rv=$?\n" -1 >&2)
+        echo "E: failed to speak, rv=$?" >&2)
       ;;
-    * ) printf '%(%T)T D: message with no letters or digits. ignored.\n' -1;;
+    * ) echo "D: message with no letters or digits. ignored.";;
   esac
   sleep 2s
   return 0

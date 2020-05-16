@@ -29,7 +29,7 @@ function worker_util__lockfile_action () {
 
 
 function worker_util__render_filename_template () {
-  local FN="$1"
+  local FN="$1" OPT=",$2,"
   [ -n "$FN" ] || return 0
   FN="${FN//%(LOG_PID)S/$LOG_PID}"
   FN="${FN//%(PID)S/$$}"
@@ -40,21 +40,81 @@ function worker_util__render_filename_template () {
       FN="${FN//%(PGID)S/$PGID}";;
   esac
 
-  printf -v FN "$FN"
   case "$FN" in
     '~/'* ) FN="$HOME${FN:1}";;
   esac
+  [[ "$OPT" == *,noprintf,* ]] || printf -v FN "$FN"
+  [ -n "$FN" ] || return 3$(
+    echo "E: failed to determine filename from pattern" >&2)
   echo "$FN"
 }
 
 
 function worker_util__maybe_redir_all_output_to_logfile () {
-  local LOG_FN="$(worker_util__render_filename_template "$1")"
-  [ -n "$LOG_FN" ] || return 0
+  [ -n "$LOG_PID" ] || local LOG_PID=$$
+  [ -n "$PGID" ] || local PGID="$(worker_util__getpgid)"
+  local LOG_FN_PAT="$(worker_util__render_filename_template "$1" noprintf)"
+  [ -n "$LOG_FN_PAT" ] || return 0
+  worker_util__logfile_reopen_once || return $?
+  exec &>> >(worker_util__logfile_reopen_copyloop) || return $?
+}
+
+
+function worker_util__logfile_reopen_once () {
+  local LOG_FN=
+  printf -v LOG_FN "$LOG_FN_PAT"
+  [ -n "$LOG_FN" ] || return 3$(echo 'E: empty logfile filename' >&2)
   mkdir --parents -- "$(dirname -- "$LOG_FN")"
   exec &>>"$LOG_FN" || return $?
-  printf '%(%F %T)T pgid %s pid %s: Log (re)start' -1 "$$" "$PGID"
-  echo ", log pid: ${LOG_PID:-not set}, log pgid: ${LOG_PGID:-not set}"
+  [ -s "$LOG_FN" ] || echo "pgid $PGID pid $$: Log (re)start," \
+    "log pid: ${LOG_PID:-not set}, log pgid: ${LOG_PGID:-not set}"
+}
+
+
+function worker_util__logfile_reopen_copyloop () {
+  local REOPENER_PID=$$
+  local REOPEN_SEC="${TTS[logfile-reopen-sec]:-10}"
+  local REOPEN_MAX_LN="${TTS[logfile-reopen-lines]:-50}"
+  local REOPEN_RMN_LN=0
+  local RD_BUF= RD_RV= AT_START_OF_LINE=+
+  while true; do
+    IFS= read -r -n 1 RD_BUF
+    RD_RV=$?
+    case "$RD_RV" in
+      0 ) ;;
+      1 ) # eof
+        kill -0 "$LOG_PID" &>/dev/null || return 0$(
+          echo "D: log copyloop terminating: no more input" \
+            "and log pid $LOG_PID died" >&2)
+        sleep 0.1s
+        continue;;
+      * )
+        echo "E: log copyloop terminating: input error $RD_RV" >&2
+        return 8;;
+    esac
+
+    if [ -n "$RD_BUF" ]; then
+      # We just read something other than a newline
+      if [ -n "$AT_START_OF_LINE" ]; then
+        [ -n "$REOPEN_SEC" -a "$SECONDS" -ge "$REOPEN_SEC" ] && REOPEN_RMN_LN=0
+        if [ "$REOPEN_RMN_LN" -lt 1 ]; then
+          SECONDS=0
+          REOPEN_RMN_LN="$REOPEN_MAX_LN"
+          worker_util__logfile_reopen_once
+        fi
+        printf '%(%y%m%d-%H%M%S)T ' -1
+        AT_START_OF_LINE=
+      fi
+      echo -n "$RD_BUF"
+      continue
+    fi
+
+    # We just read a newline
+    [ -n "$AT_START_OF_LINE" ] && continue
+    echo
+    AT_START_OF_LINE=+
+    (( REOPEN_RMN_LN -= 1 ))
+  done
 }
 
 
