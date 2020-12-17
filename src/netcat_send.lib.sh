@@ -74,4 +74,4 @@ function netcat_send__find_dest () {
 
 
 
-[ "$1" == --lib ] && return 0; netcat_send "$@"; exit $?
+[ "$1" == --lib ] && return 0; netcat_send__cli_not_impl "$@"; exit $?

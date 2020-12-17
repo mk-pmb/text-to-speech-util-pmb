@@ -53,8 +53,8 @@ function netcat_server__check_msg_head () {
   local HEAD="$(head --bytes=128)"
   HEAD="${HEAD%%$'\n'*}"
   HEAD="${HEAD%$'\r'}"
-  <<<"$HEAD" grep -xPe 'SPEAK .* NOT/HTTP'
-  return $?
+  local RGX='^SPEAK .* NOT/HTTP$'
+  [[ "$HEAD" =~ $RGX ]] || return $?
 }
 
 
