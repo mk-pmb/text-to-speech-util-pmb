@@ -70,8 +70,11 @@ function veng_wine_stdin__exec () {
         "$WPFX"/wineboot-update-fixed{,.sh,.pl,.py}
         wineboot-update-fixed
       )
-      WINECMD=( "$(which "${WINECMD[@]}" |& grep -Pe '^/' -m 1 \
-        || echo wineboot)" --update )
+      WINECMD=(
+        env WINEDLLOVERRIDES='mscoree,mshtml=n'
+        "$(which "${WINECMD[@]}" |& grep -Pe '^/' -m 1 || echo wineboot)"
+        --update
+        )
       PRE_EVAL="$VWS_PREWINEBOOT_EVAL"
       grep -qxFe '"ShowCrashDialog"=dword:00000000' -- "$WPFX"/user.reg \
         || echo "H: voice '$VOICE':" \
