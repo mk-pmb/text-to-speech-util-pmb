@@ -55,6 +55,7 @@ function netcat_server__check_msg_head () {
   HEAD="${HEAD%$'\r'}"
   local RGX='^SPEAK .* NOT/HTTP$'
   [[ "$HEAD" =~ $RGX ]] || return $?
+  echo "$HEAD"
 }
 
 
@@ -154,6 +155,9 @@ function netcat_server__one_turn () {
           LNG=;;
       esac
     fi
+    #    echo "D: message head: URL='$URL', QRY='$QRY', LNG='$LNG'" >&2
+    #  else
+    #    echo "D: head-less message" >&2
   fi
 
   if [ -z "$MSG" ]; then

@@ -64,6 +64,11 @@ function worker_util__logfile_reopen_once () {
   local LOG_FN=
   printf -v LOG_FN "$LOG_FN_PAT"
   [ -n "$LOG_FN" ] || return 3$(echo 'E: empty logfile filename' >&2)
+  if [ "${DEBUGLEVEL:-0}" -ge 2 ]; then
+    echo "D: $FUNCNAME: skip redirecting output to logfile '$LOG_FN'$(
+      ) due to DEBUGLEVEL=$DEBUGLEVEL" >&2
+    return 0
+  fi
   mkdir --parents -- "$(dirname -- "$LOG_FN")"
   exec &>>"$LOG_FN" || return $?
   [ -s "$LOG_FN" ] || echo "pgid $PGID pid $$: Log (re)start," \
