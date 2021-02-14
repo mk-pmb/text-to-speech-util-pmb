@@ -7,22 +7,15 @@ function tts_chain () {
   local INVOKED_AS="$(basename -- "$0" .sh)"
   local TTSU_PATH="$(readlink -m -- "$BASH_SOURCE"/..)"
   # cd "$TTSU_PATH" || return $?
-  local APP_NAME="$(basename -- "$TTSU_PATH")"
 
-  local -A TTS=()
+  local -A TTS=(
+    [progname]="$(basename -- "$TTSU_PATH")"
+    )
   local ITEM=
   for ITEM in "$TTSU_PATH"/src/*.lib.sh; do
-    source "$ITEM" --lib || return $?
+    source -- "$ITEM" --lib || return $?
   done
-  local CFG_PATHS=(
-    "$TTSU_PATH"/src/cfg.default.rc
-    "$HOME/.config/speech-util-pmb/tts-util.rc"
-    "$HOME/.config/$APP_NAME"/*.rc
-    )
-  for ITEM in "${CFG_PATHS[@]}"; do
-    [ -f "$ITEM" ] || continue
-    source "$ITEM" || return $?
-  done
+  cfg_read_rc_files || return $?
 
   local CMD=()
   local INVO="$INVOKED_AS"

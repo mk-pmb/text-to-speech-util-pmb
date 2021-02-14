@@ -18,6 +18,18 @@ function str_util__ltrim () {
 }
 
 
+function str_util__call_with_split_args () {
+  local SEP="$1"; shift
+  local ARGS=( "$1" ); shift
+  if [ -z "$SEP" ]; then
+    SEP="${ARGS[0]:0:1}"
+    ARGS[0]="${ARGS[0]:1}"
+  fi
+  readarray -t ARGS <<<"${ARGS[0]//$SEP/$'\n'}"
+  "$@" "${ARGS[@]}" || return $?
+}
+
+
 
 
 

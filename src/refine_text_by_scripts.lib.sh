@@ -27,10 +27,20 @@ function refine_text_by_scripts () {
 
 function refine_text_by_scripts__langdirs () {
   [ -n "${TTS[lang]}" ] || pipe_text guess_text_lang =
-  local FIND_ARGS=() ADD=() SCRIPTS=()
+  local LIST=( "$@" ) ADD=() SCRIPTS=()
   local ARG=
-  for ARG in "$@"; do
-    FIND_ARGS=(
+  if [ "$*" == --guess ]; then
+    ARG="${TTS[refine:default_dirs]}"
+    [ -n "$ARG" ] || ARG="${TTS[cfgdir]}/refine/by_lang"
+    case "$ARG" in
+      '~'/* ) LIST=( "$HOME${ARG:1}" );;
+      /* | .* ) LIST=( "$ARG" );;
+      * ) readarray -t LIST <<<"${ARG//${ARG:0:1}/$'\n'}";;
+    esac
+  fi
+  for ARG in "${LIST[@]}"; do
+    [ -n "$ARG" ] || continue
+    LIST=(
       -L    # follow symlinks
 
       "${ARG%/}/${TTS[lang]}/"
@@ -44,7 +54,7 @@ function refine_text_by_scripts__langdirs () {
       ')'
       -printf '%f\t%p\n'
     )
-    readarray -t ADD < <(find "${FIND_ARGS[@]}" | LANG=C sort -V | cut -sf 2-)
+    readarray -t ADD < <(find "${LIST[@]}" | LANG=C sort -V | cut -sf 2-)
     SCRIPTS+=( "${ADD[@]}" )
   done
   "${FUNCNAME%__*}" "${SCRIPTS[@]}"

@@ -34,12 +34,28 @@ function netcat_send__find_dest () {
   local DEST_HOST="${1:-localhost}"; shift
   local DEST_DOMAIN="${TTS[netcat-domain]}"
   case "$DEST_HOST" in
+    :* ) DEST_HOST="${TTS[netcat-dest$DEST_HOST]}";;
+  esac
+  case "$DEST_HOST" in
+    .*:* )
+      # e.g. .local:~/.config/bluetooth/headphones.host
+      DEST_DOMAIN="${DEST_HOST%%:*}"
+      DEST_HOST="${DEST_HOST#*:}"
+      ;;
     .* )
       DEST_DOMAIN="$DEST_HOST"
       DEST_HOST="$1"; shift
       ;;
   esac
-  local DEST_PORT="${1:-${TTS[netcat-port]}}"; shift
+  local DEST_PORT="$1"; shift
+  if [ -z "$DEST_PORT" ]; then
+    DEST_PORT="${DEST_HOST##*:}"
+    case "$DEST_PORT" in
+      *[^0-9]* ) DEST_PORT=;;
+      *[0-9]* ) DEST_HOST="${DEST_HOST%:*}";;
+    esac
+  fi
+  [ -n "$DEST_PORT" ] || DEST_PORT="${TTS[netcat-port]}"
   [ -n "$HOSTNAME" ] || local HOSTNAME="$(hostname --short)"
 
   case "$DEST_HOST" in
@@ -62,7 +78,18 @@ function netcat_send__find_dest () {
   [ -n "$DEST_HOST" ] || return 5$(echo "E: no destination host given" >&2)
 
   echo "$DEST_HOST $DEST_PORT"
-  return $?
+}
+
+
+function netcat_grab_refine_send () {
+  local DEST_SPEC="$1"; shift
+  local DEST_ADDR="$(netcat_send__find_dest "$DEST_SPEC")"
+  [ -n "$DEST_ADDR" ] || return 4$(
+    echo "E: $FUNCNAME: Cannot resolve destination: ${DEST_SPEC:-(empty)}" >&2)
+  grab_text "$@" || return $?
+  netcat_server__stash_msg_head \
+    refine_text_by_scripts__langdirs --guess || return $?
+  netcat_send__with_lang "${DEST_ADDR% *}" "${DEST_ADDR##* }" || return $?
 }
 
 
