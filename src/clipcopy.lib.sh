@@ -2,6 +2,19 @@
 # -*- coding: utf-8, tab-width: 2 -*-
 
 function clipcopy () {
+  # Determine active program in order to decide how to extract text:
+  local AWIN_WID="$(xdotool getactivewindow)"
+  local AWIN_PID="$(xdotool getwindowpid "$AWIN_WID")"
+  local AWIN_CLS="$(wmctrl -xl | grep -oPe '^(\S+\s+){3}' \
+    | sed -nre 's~\s+$~~;s~^0x0*'"$(printf %x "$AWIN_WID")"' +\S+ ~~p')"
+  local AWIN_PROG=
+  # [ -z "$AWIN_PID" ] || AWIN_PROG="$(ps ho comm "$AWIN_PID")"
+  # enus gxmessage "$(local -p)"
+  case "$AWIN_CLS" in
+    dillo.Dillo | \
+    __middle_click_paste_style__ ) LANG=C xsel --output --primary; return $?;;
+  esac
+
   local CLIP_BACKUP="$(xsel --clipboard --output | base64)"
   local CLIP_TEXT=
   local CLIP_TIMEOUT=2
