@@ -1,3 +1,5 @@
+# -*- coding: utf-8, tab-width: 2 -*-
+
 TTS[langs]=en,de
 TTS[netcat-port]=4224   # xtell
 
@@ -33,3 +35,8 @@ TTS[netcat-port]=4224   # xtell
 # TTS[helen:voice]='TTS_MS_en-US_Helen_11.0'
 # TTS[helen:speed]=4
 # TTS[lang:en]=helen
+
+
+
+TTS[clipcopy:mode_by_winclass:claws-mail.]=primary
+TTS[clipcopy:mode_by_winclass:dillo.]=primary
