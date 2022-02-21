@@ -43,6 +43,8 @@ function refine_text_by_scripts__langdirs () {
     LIST=(
       -L    # follow symlinks
 
+      # NB: Order of directories here doesn't matter: Our combination of
+      #     -printf and sort ensures ordering based primarily on filenames.
       "${ARG%/}/${TTS[lang]}/"
       "${ARG%/}/common/"
 
