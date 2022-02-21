@@ -41,9 +41,18 @@ function tts_chain () {
 
 
 function grab_text () {
-  if [ "$1" == --refine ]; then exec <<<"${TTS[text]}"; shift; fi
+  if [ "$1" == --refine ]; then
+    # Feed old text to command that produces the new text. Example:
+    #   tts-util-pmb grab_text dummytext : pipe_text nl \
+    #     : grab_text --refine sort : pipe_text nl
+    shift
+    exec <<<"${TTS[text]}"
+  fi
   local ERRLV=E
-  if [ "$1" == --maybe ]; then ERRLV=W; shift; fi
+  case "$1" in
+    --maybe ) ERRLV=W; shift;;
+    --literal ) shift; printf -v TTS[text] -- '%s\n' "$@"; return $?;;
+  esac
   local TX=     # <-- pre-declare because "local" determines $?, whereas…
   TX="$("$@")"  # <-- a simple assignment transports $?.
   local RV="$?"
