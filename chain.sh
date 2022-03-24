@@ -17,14 +17,16 @@ function tts_chain () {
   done
   cfg_read_rc_files || return $?
 
-  local CMD=()
+  local PRE_CMD=()
   local INVO="$INVOKED_AS"
   INVO="${INVO#tts-}"
   INVO="${INVO%-pmb}"
   case "$INVO" in
-    ncsrv ) CMD=( netcat_server : );;
+    ncsrv ) PRE_CMD=( netcat_server );;
   esac
-  for ITEM in "${CMD[@]}" "$@" :; do
+
+  local CMD=()
+  for ITEM in "${PRE_CMD[@]}" "$@" :; do
     case "$ITEM" in
       : )
         if [ -n "${CMD[*]}" ]; then
@@ -36,7 +38,6 @@ function tts_chain () {
       * ) CMD+=( "$ITEM" );;
     esac
   done
-  return 0
 }
 
 
