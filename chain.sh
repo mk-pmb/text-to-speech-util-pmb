@@ -32,12 +32,25 @@ function tts_chain () {
         if [ -n "${CMD[*]}" ]; then
           ITEM="$TTSU_PATH/src/${CMD[0]}.sh"
           [ -x "$ITEM" ] && CMD[0]="$ITEM"
+          dbgp 2 "D: chain cmd:$(printf -- ' ‹%s›' "${CMD[@]}")"
           "${CMD[@]}" || return $?
         fi
         CMD=();;
       * ) CMD+=( "$ITEM" );;
     esac
   done
+  dbgp 2 "D: chain done"
+}
+
+
+function in_func () { "$@"; }
+
+
+function dbgp () { # debug print
+  [ "${DEBUGLEVEL:-0}" -ge "$1" ] || return 0
+  shift
+  printf -- '%(%T)T ' -1 >&2
+  echo "$*" >&2
 }
 
 

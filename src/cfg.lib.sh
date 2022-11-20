@@ -59,7 +59,7 @@ function cfg_read_rc_files () {
   local ITEM=
   for ITEM in "${CFG_FILES[@]}"; do
     [ -f "$ITEM" ] || continue
-    source -- "$ITEM" || return $?
+    in_func source -- "$ITEM" || return $?
   done
 }
 
