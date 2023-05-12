@@ -15,8 +15,9 @@ function refine_text_by_scripts () {
       esac
     else
       case "$ARG" in
-        *.sed ) HOW=( sed -rf "$ARG" );;
         *.js ) HOW=( nodejs "$ARG" );;
+        *.sed ) HOW=( sed -rf "$ARG" );;
+        *.sh ) HOW=( bash "$ARG" );;
       esac
     fi
     LANG=C grab_text --refine --maybe "${HOW[@]}"
@@ -53,6 +54,7 @@ function refine_text_by_scripts__langdirs () {
       '(' -false
         -o -name '*.js'
         -o -name '*.sed'
+        -o -name '*.sh'
       ')'
       -printf '%f\t%p\n'
     )
