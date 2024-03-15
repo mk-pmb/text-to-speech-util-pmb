@@ -65,7 +65,11 @@ function grab_text () {
   local ERRLV=E
   case "$1" in
     --maybe ) ERRLV=W; shift;;
-    --literal ) shift; printf -v TTS[text] -- '%s\n' "$@"; return $?;;
+    --literal )
+      shift
+      printf -v TTS[text] -- '%s\n' "$@"
+      dbgp 4 D: $FUNCNAME: "literally: ‹${TTS[text]}›"
+      return $?;;
   esac
   local TX=     # <-- pre-declare because "local" determines $?, whereas…
   TX="$("$@")"  # <-- a simple assignment transports $?.
@@ -80,10 +84,12 @@ function grab_text () {
     return 2
   fi
   TTS[text]="$TX"
+  dbgp 4 D: $FUNCNAME: "grabbed: ‹${TTS[text]}›"
 }
 
 
 function pipe_text () {
+  [ "$#" -ge 1 ] || echo W: $FUNCNAME: 'No command given!'
   <<<"${TTS[text]}" "$@"; return $?
 }
 

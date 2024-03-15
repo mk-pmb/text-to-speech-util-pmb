@@ -4,6 +4,7 @@
 function refine_text_by_scripts () {
   local ARG=
   local HOW=()
+  dbgp 8 D: $FUNCNAME: "before ($# args): ‹${TTS[text]}›"
   while [ "$#" -ge 1 ]; do
     ARG="$1"; shift
     [ -f "$ARG" ] || continue
@@ -21,6 +22,7 @@ function refine_text_by_scripts () {
       esac
     fi
     LANG=C grab_text --refine --maybe "${HOW[@]}"
+    dbgp 8 D: $FUNCNAME: "after ‹$ARG›: ‹${TTS[text]}›"
   done
   return 0
 }
