@@ -84,6 +84,9 @@ function netcat_send__find_dest () {
 
 
 function netcat_grab_refine_send () {
+  # To test refinements: DEBUGLEVEL=8 tts-util-pmb \
+  #   : grab_text --literal 'Your' 'text here' \
+  #   : refine_text_by_scripts__langdirs --guess : pipe_text hd
   local DEST_SPEC="$1"; shift
   local DEST_ADDR="$(netcat_send__find_dest "$DEST_SPEC")"
   [ -n "$DEST_ADDR" ] || return 4$(
