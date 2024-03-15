@@ -87,15 +87,15 @@ function netcat_grab_refine_send () {
   local DEST_SPEC="$1"; shift
   local DEST_ADDR="$(netcat_send__find_dest "$DEST_SPEC")"
   [ -n "$DEST_ADDR" ] || return 4$(
-    echo "E: $FUNCNAME: Cannot resolve destination: ${DEST_SPEC:-(empty)}" >&2)
-  dbgp 4 "D: $FUNCNAME: gonna grab:"
+    echo E: $FUNCNAME: "Cannot resolve destination: ${DEST_SPEC:-(empty)}" >&2)
+  dbgp 4 D: $FUNCNAME: 'gonna grab:'
   grab_text "$@" || return $?
-  dbgp 4 "D: $FUNCNAME: stash head:"
+  dbgp 4 D: $FUNCNAME: 'stash head:'
   netcat_server__stash_msg_head \
     refine_text_by_scripts__langdirs --guess || return $?
-  dbgp 4 "D: $FUNCNAME: gonna send:"
+  dbgp 4 D: $FUNCNAME: 'gonna send:'
   netcat_send__with_lang "${DEST_ADDR% *}" "${DEST_ADDR##* }" || return $?
-  dbgp 4 "D: $FUNCNAME: done."
+  dbgp 4 D: $FUNCNAME: 'done.'
 }
 
 
