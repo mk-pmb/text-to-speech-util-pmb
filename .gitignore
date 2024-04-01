@@ -1,3 +1,15 @@
 
-/blob-snapshots/
+# Auto-generated files:
+/tmp.*
+
+
+# Extra worktrees:
+/blob-snapshots
+
+
+# Site-specific files:
 /tts-util.rc
+
+
+
+# Unsorted stuff (this section should be empty):
