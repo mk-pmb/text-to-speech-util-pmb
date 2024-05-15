@@ -23,6 +23,25 @@ If you prefer to compile them yourself, you can find the sources here:
   https://github.com/mk-pmb/webspeech-util-pmb/
 
 
+
+
+Research notes
+--------------
+
+### Offline speech recognition
+
+* [Wikipedia has a list.
+  ](https://en.wikipedia.org/wiki/List_of_speech_recognition_software)
+* [CMU Sphinx](https://cmusphinx.github.io/wiki/): Mostly BSD-licensed.
+  CMU = Carnegie Mellon University. Family of SR tools and libraries.
+  * __PocketSphinx:__ Lightweight. Easy setup. Designed for small vocabularies.
+    Supports custom language models.
+* [Kaldi](http://kaldi-asr.org/): Apache 2.0 License. "Powerful" SR toolkit.
+  "State-of-the-art" performance and flexibility. Somewhat complex setup.
+  Supports custom acoustic and language models.
+
+
+
 <!--#toc stop="scan" -->
 
 
